@@ -713,9 +713,11 @@ func (sl *Slice) updatePhCacheFromDom(pendingHeader types.PendingHeader, termini
 			combinedPendingHeader = sl.combinePendingHeader(pendingHeader.Header(), combinedPendingHeader, i, false)
 		}
 
+		nodeCtx := common.NodeLocation.Context()
 		// Pick the head
 		if subReorg {
-			if localPendingHeader.Header().Root() != types.EmptyRootHash {
+			if (localPendingHeader.Header().Root() != types.EmptyRootHash && nodeCtx == common.ZONE_CTX) || nodeCtx == common.REGION_CTX {
+				fmt.Println("local root is not emtpty")
 				block := sl.hc.GetBlockOrCandidateByHash(localPendingHeader.Header().ParentHash())
 				if block != nil {
 					sl.hc.SetCurrentHeader(block.Header())
@@ -728,6 +730,7 @@ func (sl *Slice) updatePhCacheFromDom(pendingHeader types.PendingHeader, termini
 					log.Warn("unable to set the current header after the cord update", "Hash", localPendingHeader.Header().ParentHash())
 				}
 			} else {
+				fmt.Println("local root is emtpty")
 				block := sl.hc.GetBlockOrCandidateByHash(localPendingHeader.Header().ParentHash())
 				if block != nil {
 					sl.hc.SetCurrentHeader(block.Header())
